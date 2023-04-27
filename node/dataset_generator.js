@@ -41,7 +41,7 @@ fileNames.forEach(fn=>{
         samples.push({
             id,
             label,
-            sutdent_name: student,
+            student_name: student,
             student_id: session
         });
 
