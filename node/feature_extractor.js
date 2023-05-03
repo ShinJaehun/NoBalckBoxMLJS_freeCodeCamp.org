@@ -1,5 +1,5 @@
 const constants = require('../common/constants.js');
-const features = require('../common/features.js');
+const featureFunctions = require('../common/featureFunctions.js');
 
 const fs = require('fs');
 
@@ -13,13 +13,20 @@ for (const sample of samples) {
             constants.JSON_DIR+"/"+sample.id+".json"
         )
     );
-    sample.point=[
-        features.getPathCount(paths),
-        features.getPointCount(paths)
-    ];
+
+    // generalized
+    // 이런게 고급 기능!
+    const functions=featureFunctions.inUse.map(f=>f.function);
+    sample.point=functions.map(f=>f(paths));
+
+    // sample.point=[
+    //     featureFunctions.getPathCount(paths),
+    //     featureFunctions.getPointCount(paths)
+    // ];
 }
 
-const featureNames = ["Path Count", "Point Count"];
+const featureNames = featureFunctions.inUse.map(f=>f.name);
+// const featureNames = ["Path Count", "Point Count"];
 
 fs.writeFileSync(constants.FEATURES,
     JSON.stringify({

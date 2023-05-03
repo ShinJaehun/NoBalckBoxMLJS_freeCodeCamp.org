@@ -1,6 +1,6 @@
 class SketchPad {
     // 헐 이런식으로 html이 아닌 js에서 canvas를 생성할 수도 있구만!
-    constructor(container, size=400) {
+    constructor(container, onUpdate=null, size=400) {
         this.canvas = document.createElement("canvas");
         this.canvas.width = size;
         this.canvas.height = size;
@@ -24,6 +24,7 @@ class SketchPad {
         // this.#redraw();
         this.reset();
 
+        this.onUpdate = onUpdate;
         this.#addEventListeners();
     }
 
@@ -106,6 +107,13 @@ class SketchPad {
             this.undoBtn.disabled = false;
         } else {
             this.undoBtn.disabled = true;
+        }
+        this.triggerUpdate();
+    }
+
+    triggerUpdate(){
+        if(this.onUpdate){
+            this.onUpdate(this.paths);
         }
     }
 
