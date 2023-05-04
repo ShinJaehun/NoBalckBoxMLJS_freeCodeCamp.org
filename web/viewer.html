@@ -21,6 +21,7 @@
     <div id="container"></div>
 
     <script src="../common/js_objects/features.js"></script>
+    <script src="../common/js_objects/minMax.js"></script>
 
     <script src="../common/constants.js"></script>
     <script src="../common/utils.js"></script>
@@ -74,7 +75,6 @@
         graphics.generateImages(utils.styles);
 
         // for google chart
-
         // google.charts.load('current', {'packages':['corechart']});
         // // google.charts.load('current', {'packages':['corechart', 'scatter']});
         // // 이게 transparency를 지원하는 대신에 color나 zoom 기능이 사용 불가
@@ -118,6 +118,10 @@
             // ];
 
             // console.log(point);
+
+            // 데이터만 normalize할게 아니라 drawing도 normalize해야함.
+            // 여기서 minMax를 다시 normalizePoints()로...
+            utils.normalizePoints([point], minMax);
 
             const {label,nearestSample}=classify(point);
             console.log(label);
