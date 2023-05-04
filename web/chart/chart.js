@@ -37,16 +37,23 @@ class Chart{
       this.defaultDataBounds=this.#getDataBounds();
 
       this.dynamicPoint=null;
-      this.nearestSample=null;
+      // this.nearestSample=null;
+      this.nearestSamples=null;
 
       this.#draw();
 
       this.#addEventListeners();
    }
 
-   showDynamicPoint(point, label, nearestSample){
+   // showDynamicPoint(point, label, nearestSample){
+   //    this.dynamicPoint={point,label};
+   //    this.nearestSample=nearestSample;
+   //    this.#draw();
+   // }
+
+   showDynamicPoint(point, label, nearestSamples){
       this.dynamicPoint={point,label};
-      this.nearestSample=nearestSample;
+      this.nearestSamples=nearestSamples;
       this.#draw();
    }
 
@@ -265,20 +272,37 @@ class Chart{
 
          // graphics.drawPoint(ctx,pixelLoc,"black");
 
-         ctx.beginPath();
-         ctx.moveTo(...pixelLoc);
-         ctx.lineTo(...math.remapPoint(
-            this.dataBounds,
-            this.pixelBounds,
-            this.nearestSample.point
-         ));
-         ctx.stroke();
+         // nearest neighbor
+         // ctx.beginPath();
+         // ctx.moveTo(...pixelLoc);
+         // ctx.lineTo(...math.remapPoint(
+         //    this.dataBounds,
+         //    this.pixelBounds,
+         //    this.nearestSample.point
+         // ));
+         // ctx.stroke();
+      
+
+         ctx.strokeStyle="gray";
+         // k nearest neighbor
+         for (const sample of this.nearestSamples) {
+            const point=math.remapPoint(
+               this.dataBounds,
+               this.pixelBounds,
+               sample.point
+            )
+            ctx.beginPath();
+            ctx.moveTo(...pixelLoc);
+            ctx.lineTo(...point);
+            ctx.stroke();
+         }
 
          graphics.drawImage(
             ctx,
             this.styles[label].image,
             pixelLoc
          );
+
       }
 
       this.#drawAxes();

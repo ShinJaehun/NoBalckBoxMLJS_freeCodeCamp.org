@@ -17,10 +17,14 @@
         <button onClick="toggleInput()">
             Toggle Input
         </button>
+        <div id="statistics"></div>
     </div>
     <div id="container"></div>
 
     <script src="../common/js_objects/features.js"></script>
+    <script src="../common/js_objects/training.js"></script>
+    <script src="../common/js_objects/testing.js"></script>
+
     <script src="../common/js_objects/minMax.js"></script>
 
     <script src="../common/constants.js"></script>
@@ -41,12 +45,51 @@
 
     <script>
         // 이게 정확히 뭔지 잘 모르겠음
-        const {samples,featureNames}=features; 
+        const {samples,featureNames}=features;
+
+        const trainingSamples=training.samples;
+        const testingSamples=testing.samples;
+
+        const k=50;
+
+        let correctCount=0;
+        let totalCount=0;
+
+        for(const testSample of testingSamples){
+            testSample.truth=testSample.label;
+            testSample.label="?";
+            const {label}=classify(testSample.point);
+            testSample.label=label;
+            testSample.correct=testSample.label===testSample.truth;
+            totalCount++;
+            correctCount+=testSample.correct?1:0;
+        }
+
+        statistics.innerHTML="<b>Accuracy</b><br>"+correctCount+"/"+totalCount+" ("+utils.formatPercent(correctCount/totalCount)+")";
+
         // console.log(samples);
-        const groups = utils.groupBy(samples, "student_id");
-        console.log(groups);
-        for (let student_id in groups) {
-            const samples = groups[student_id];
+        // const groups = utils.groupBy(samples, "student_id");
+        // console.log(groups);
+        // for (let student_id in groups) {
+        //     const samples = groups[student_id];
+        //     const studentName = samples[0].student_name;
+        //     createRow(container, studentName, samples);
+        // }
+
+        const trainingGroups = utils.groupBy(trainingSamples, "student_id");
+        for (let student_id in trainingGroups) {
+            const samples = trainingGroups[student_id];
+            const studentName = samples[0].student_name;
+            createRow(container, studentName, samples);
+        }
+
+        const subtitle=document.createElement("h2");
+        subtitle.innerHTML="TESTING";
+        container.appendChild(subtitle);
+
+        const testingGroups = utils.groupBy(testingSamples, "student_id");
+        for (let student_id in testingGroups) {
+            const samples = testingGroups[student_id];
             const studentName = samples[0].student_name;
             createRow(container, studentName, samples);
         }
@@ -98,13 +141,15 @@
 
         const chart = new Chart(
             chartContainer, 
-            samples,
+            // samples,
+            trainingSamples,
             options,
             handleClick
         );
 
         const sketchPad = new SketchPad(inputContainer, onDrawingUpdate);
         sketchPad.canvas.style.cssText+="outline:1000px solid rgba(0,0,0,0.7);"
+        toggleInput();
 
         function onDrawingUpdate(paths){
 
@@ -123,19 +168,51 @@
             // 여기서 minMax를 다시 normalizePoints()로...
             utils.normalizePoints([point], minMax);
 
-            const {label,nearestSample}=classify(point);
+            // const {label,nearestSample}=classify(point);
+            const {label,nearestSamples}=classify(point);
+
             console.log(label);
 
             predictedLabelContainer.innerHTML="Is it a "+label+" ?";
 
-            chart.showDynamicPoint(point, label,nearestSample);
+            // chart.showDynamicPoint(point, label,nearestSample);
+            chart.showDynamicPoint(point, label,nearestSamples);
+
         }
 
         function classify(point) {
-            const samplePoints=samples.map(s=>s.point);
-            const index=utils.getNearest(point, samplePoints);
-            const nearestSample=samples[index];
-            return {label:nearestSample.label,nearestSample};
+            // const samplePoints=samples.map(s=>s.point);
+            // nearest neighbor
+            // const index=utils.getNearest(point, samplePoints);
+            // const nearestSample=samples[index];
+            // return {label:nearestSample.label,nearestSample};
+
+            // k nearest neighbor
+            // const indices=utils.getNearest(point, samplePoints, 10);
+            // const nearestSamples=indices.map(i=>samples[i]);
+            // const labels=nearestSamples.map(s=>s.label);
+            // const counts={};
+            // for(const label of labels){
+            //     counts[label]=counts[label]?counts[label]+1:1;
+            // }
+            // const max=Math.max(...Object.values(counts));
+            // const label=labels.find(l=>counts[l]==max);
+
+            // return {label,nearestSamples};
+
+            const samplePoints=trainingSamples.map(s=>s.point);
+
+            const indices=utils.getNearest(point, samplePoints, k);
+            const nearestSamples=indices.map(i=>trainingSamples[i]);
+            const labels=nearestSamples.map(s=>s.label);
+            const counts={};
+            for(const label of labels){
+                counts[label]=counts[label]?counts[label]+1:1;
+            }
+            const max=Math.max(...Object.values(counts));
+            const label=labels.find(l=>counts[l]==max);
+
+            return {label,nearestSamples};
         }
     </script>
 
