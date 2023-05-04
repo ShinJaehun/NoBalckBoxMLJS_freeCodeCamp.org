@@ -5,6 +5,9 @@ class Chart{
       this.axesLabels=options.axesLabels;
       this.styles=options.styles;
       this.icon=options.icon;
+
+      this.bg = options.bg;
+
       this.onClick=onClick;
 
       this.canvas=document.createElement("canvas");
@@ -14,6 +17,7 @@ class Chart{
       container.appendChild(this.canvas);
 
       this.ctx=this.canvas.getContext("2d");
+      this.ctx.imageSmoothingEnabled=false;
 
       this.margin=options.size*0.11;
       this.transparency=options.transparency||1;
@@ -245,6 +249,15 @@ class Chart{
       const {ctx,canvas}=this;
       ctx.clearRect(0,0,canvas.width,canvas.height);
 
+      const topLeft=math.remapPoint(
+         this.dataBounds,
+         this.pixelBounds,
+         [0,1]
+      );
+      const sz=(canvas.width-this.margin*2)/this.dataTrans.scale**2;
+      ctx.drawImage(this.bg,...topLeft,sz,sz);
+
+      /*
       ctx.globalAlpha=this.transparency;
       this.#drawSamples(this.samples);
       ctx.globalAlpha=1;
@@ -261,6 +274,7 @@ class Chart{
          );
       }
 
+      */
       if(this.dynamicPoint){
          const {point,label}=this.dynamicPoint;
          const pixelLoc=math.remapPoint(
@@ -268,6 +282,8 @@ class Chart{
             this.pixelBounds,
             point
          );
+
+         /*
          graphics.drawPoint(ctx,pixelLoc, "rgba(255,255,255,0.7", 10000000);
 
          // graphics.drawPoint(ctx,pixelLoc,"black");
@@ -296,7 +312,8 @@ class Chart{
             ctx.lineTo(...point);
             ctx.stroke();
          }
-
+         */
+        
          graphics.drawImage(
             ctx,
             this.styles[label].image,
